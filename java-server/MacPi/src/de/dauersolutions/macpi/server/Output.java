@@ -8,7 +8,10 @@ import java.io.OutputStreamWriter;
 
 public class Output {
 	
-	private static Output instance = null;
+	private static Output instance = null; 
+	
+	public static final int DISPLAY_WIDTH = 20;
+	public static final int DISPLAY_HEIGHT = 4;
 	
 	public static Output getInstance() {
 		if (instance == null) {
@@ -20,7 +23,6 @@ public class Output {
 	Process p;
 	BufferedWriter pout;
 	private boolean icmpLower;
-	private boolean reachableLower;
 	
 	private Output() {
 		System.out.println("output-init-bla");
@@ -61,45 +63,45 @@ public class Output {
 			t2.setDaemon(true);
 			t2.start();
 			pout = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-//			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//			String line;
-//			while ((line = in.readLine()) != null) {
-//				pout.write(line + "\n");
-//				pout.flush();
-//			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public synchronized static void print(String... s) {
+		if (s.length > DISPLAY_HEIGHT) {
+			System.out.println("Too many Lines in output");
+		}
 		for (int i = 0; i < s.length; i++) {
-			if (s[i].length() > 16) {
-				s[i] = s[i].substring(0, 16);
+			if (s[i].length() > DISPLAY_WIDTH) {
+				s[i] = s[i].substring(0, DISPLAY_WIDTH);
 				System.out.println("string too long, truncating");
 			} else {
-				while (s[i].length() < 16) {
+				while (s[i].length() < DISPLAY_WIDTH) {
 					s[i] = s[i]+" ";
 				}
 			}
 			
 		}
-		
-		System.out.println(System.currentTimeMillis());
-		
-		System.out.println("+----------------+");
+		System.out.println("Output example:");
+		for (int i = 0; i < s.length; i++) {
+			System.out.println("|"+s[i] + "|");
+		}
 
-		System.out.println("|"+s[0] + "|");
-		System.out.println("|"+s[1] + "|");
-
-		System.out.println("+----------------+");
 		getInstance().toLcd(s);
 	}
 
 	private void toLcd(String[] s) {
 		try {
 			pout.write("lcd.clear()\n");
-			pout.write("lcd.message(\""+s[0]+"\\n"+s[1]+"\")\n");
+			pout.write("lcd.message(\"");
+			for (int i = 0; i < s.length; i++) {
+				pout.write(s[i]);
+				if (i < s.length - 1) {
+					pout.write("\\n");
+				}
+			}
+			pout.write("\")\n");
 			pout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -115,6 +117,7 @@ public class Output {
 			pout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
+			throw new RuntimeException("Error writing to python");
 		}
 		
 	}
@@ -128,35 +131,14 @@ public class Output {
 		char c;
 		if (icmpLower) {
 			icmpLower = false;
-			c = 'P';
+			c = '\\';
 		} else {
 			icmpLower = true;
 			c = 'p';
 		}
 		if (!gotPing)
-			c = '.';
-		lcdWriteCharAt(1, 1, c);
+			c = '/';
+		lcdWriteCharAt(11, 4, c);
 	}
-
-	public static void reachable(boolean isReachable) {
-		Output.getInstance().reachalbeE(isReachable);
-	}
-
-	private void reachalbeE(boolean isReachable) {
-		char c;
-		if (reachableLower) {
-			reachableLower = false;
-			c = 'R';
-		} else {
-			reachableLower = true;
-			c = 'r';
-		}
-		if (!isReachable)
-			c = '.';
-		lcdWriteCharAt(0, 1, c);
-
-	}
-	
-	
 
 }

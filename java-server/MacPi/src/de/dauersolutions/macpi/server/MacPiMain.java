@@ -13,7 +13,6 @@ public class MacPiMain implements DeviceProvider {
 	}
 	
 	public MacPiMain() throws IOException {
-//		System.out.println("Goodbye World");
 		Output.print(new String[] {"Waiting for device", "..."});
 		Process tail = Runtime.getRuntime().exec(
 				"tail -n0 -f /var/lib/dhcp/dhcpd.leases");
