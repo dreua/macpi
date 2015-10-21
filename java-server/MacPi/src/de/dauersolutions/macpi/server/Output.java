@@ -27,18 +27,19 @@ public class Output {
 	private Output() {
 		System.out.println("output-init-bla");
 		try {
-			p = Runtime.getRuntime().exec("sudo python macpi/Adafruit_CharLCD.py");// TODO not portable
+			p = Runtime.getRuntime().exec("sudo python lcd_driver.py");
 			final BufferedReader pin = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					String line;
 					try {
+						System.out.println("starting input");
 						while ((line = pin.readLine()) != null) {
 							System.out.println("<pyout>" + line);
 						}
+						System.out.println("End of input");
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -52,10 +53,9 @@ public class Output {
 					String line;
 					try {
 						while ((line = pine.readLine()) != null) {
-							System.out.println("<pyout>" + line);
+							System.out.println("<pyout-error>" + line);
 						}
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -90,18 +90,22 @@ public class Output {
 
 		getInstance().toLcd(s);
 	}
-
+	
+	private void clearLcd() throws IOException {
+		pout.write("clear()\n");
+		pout.flush();
+	}
+	
 	private void toLcd(String[] s) {
 		try {
-			pout.write("lcd.clear()\n");
-			pout.write("lcd.message(\"");
-			for (int i = 0; i < s.length; i++) {
-				pout.write(s[i]);
-				if (i < s.length - 1) {
-					pout.write("\\n");
-				}
+			clearLcd();
+			if (s.length == 0) {
+				return;
 			}
-			pout.write("\")\n");
+			for (int i = 0; i < s.length; i++) {
+				pout.write("w(\"" + s[i] + "\", " + i + ")\n");
+				System.out.println("Writing: " + s[i]);
+			}
 			pout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -110,10 +114,10 @@ public class Output {
 	}
 	
 
-	private void lcdWriteCharAt(int col, int row, char c) {
+	private void lcdWriteCharAt(int col, int row, String c) {
 		try {
-			pout.write("lcd.setCursor("+col+", "+row+")\n");
-			pout.write("lcd.message(\""+c+"\")\n");
+			pout.write("c(\"" + c + "\","+row+","+col+")\n");
+//			pout.write("lcd.message(\""+c+"\")\n");
 			pout.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -128,17 +132,17 @@ public class Output {
 	}
 
 	private void icmpE(boolean gotPing) {
-		char c;
+		String c;
 		if (icmpLower) {
 			icmpLower = false;
-			c = '\\';
+			c = "|";
 		} else {
 			icmpLower = true;
-			c = 'p';
+			c = "-";
 		}
 		if (!gotPing)
-			c = '/';
-		lcdWriteCharAt(11, 4, c);
+			c = " ";
+		lcdWriteCharAt(11, 3, c);
 	}
 
 }
