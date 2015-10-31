@@ -84,7 +84,7 @@ public class Device extends Thread {
 	public void print() {
 		Output.print("Connected MAC:", 
 				macPrint + "-R",
-				"almost blank",
+				"ARP-Ping:",
 				"ICMP-Ping:");
 	}
 
