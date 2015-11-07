@@ -23,6 +23,7 @@ public class Output {
 	Process p;
 	BufferedWriter pout;
 	private boolean icmpLower;
+	private boolean arpLower;
 	
 	private Output() {
 		System.out.println("output-init-bla");
@@ -131,6 +132,25 @@ public class Output {
 		
 	}
 
+	public static void arp(boolean gotPing) {
+		Output.getInstance().arpE(gotPing);
+		
+	}
+
+	private void arpE(boolean gotPing) {
+		String c;
+		if (arpLower) {
+			arpLower = false;
+			c = "|";
+		} else {
+			arpLower = true;
+			c = "-";
+		}
+		if (!gotPing)
+			c = " ";
+		lcdWriteCharAt(11, 2, c);
+	}
+
 	private void icmpE(boolean gotPing) {
 		String c;
 		if (icmpLower) {
@@ -144,5 +164,6 @@ public class Output {
 			c = " ";
 		lcdWriteCharAt(11, 3, c);
 	}
+
 
 }

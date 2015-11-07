@@ -6,7 +6,8 @@ import java.io.InputStreamReader;
 
 public class MacPiMain implements DeviceProvider {
 	
-	Device d;
+	public static final String[] WAITING_MESSAGE = new String[] {"Plug me in", "please", "then I will show", "you MAC-Adresses!"};
+	private Device d;
 
 	public static void main2(final String[] args) throws InterruptedException {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -29,7 +30,7 @@ public class MacPiMain implements DeviceProvider {
 		BufferedReader in = null;
 		final Process tail;
 		try {
-			Output.print(new String[] {"Waiting for device", "..."});
+			Output.print(WAITING_MESSAGE);
 			tail = Runtime.getRuntime().exec(
 					"tail -n0 -f /var/lib/dhcp/dhcpd.leases");
 			Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -45,14 +46,14 @@ public class MacPiMain implements DeviceProvider {
 					tail.getInputStream()));
 
 			String line;
-			d = new Device();
 			MacPiServer mps = new MacPiServer((DeviceProvider)this);
 			mps.start();
 			while ((line = in.readLine()) != null) {
 				if (line.startsWith("lease")) {
-					d.remove();
-					d = new Device();
-					d.setIp(line.split(" ")[1]);
+					if (d != null) {
+						d.remove();
+					}
+					d = new Device(line.split(" ")[1]);
 				}
 				String he = "hardware ethernet";
 				if (line.contains(he)) {

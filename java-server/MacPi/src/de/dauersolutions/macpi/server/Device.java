@@ -1,12 +1,12 @@
 package de.dauersolutions.macpi.server;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
+import de.dauersolutions.macpi.server.ping.ArpPingThread;
+import de.dauersolutions.macpi.server.ping.IcmpPingThread;
+import de.dauersolutions.macpi.server.ping.PingThread;
 
-public class Device extends Thread {
+public class Device {
 	
-	public static final int PING_TIMEOUT_MILLIS = 100;
+	public static final int PING_TIMEOUT_MILLIS = 300;
 	
 	String ip = null;
 	String ipPrint = null;
@@ -14,19 +14,22 @@ public class Device extends Thread {
 	String macPrint = null;
 	
 	boolean terminate = false;
-	boolean isIcmpPingable = false;
+	
+	public Device(String ip) {
+		setIp(ip);
+		PingThread icmp = new IcmpPingThread(this);
+		icmp.start();
+		PingThread arp = new ArpPingThread(this);
+		arp.start();
+	}
 
 	public void remove() {
 		terminate = true;
-		Output.print(new String[] {"Waiting for","device"});
+		Output.print(MacPiMain.WAITING_MESSAGE);
 		
 	}
 	
-	public Device() {
-		setDaemon(true);
-	}
-
-	public void setIp(String ip) {
+	private void setIp(String ip) {
 		this.ip = ip;
 		System.out.println("setting ip to: " + ip);
 		ipPrint = ip;
@@ -47,45 +50,23 @@ public class Device extends Thread {
 		}
 		macPrint = mac.replace(":", "-").toUpperCase();
 		print();
-		if (!isAlive())
-			start();
 	}
 	
-	public void run() {
-		// icmp ping here
-		while (!terminate) {
-			boolean gotPing = false;
-			try {
-				long start = System.currentTimeMillis();
-				Process p = Runtime.getRuntime().exec("ping -c 1 -w 2 " + ip);
-				BufferedReader in = new BufferedReader(
-						new InputStreamReader(p.getInputStream()));
-				String line;
-				while ((line = in.readLine()) != null) {
-					//System.out.println(line);
-					if (line.contains("bytes from")) {
-						gotPing = true;
-					}
-				}
-				Thread.sleep(Math.min(PING_TIMEOUT_MILLIS, 
-						Math.max(50, PING_TIMEOUT_MILLIS - 
-								(System.currentTimeMillis() - start))));
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			isIcmpPingable = gotPing;
-//			print();
-			Output.icmp(gotPing);
-		}
-	}
+	
 	
 	public void print() {
 		Output.print("Connected MAC:", 
 				macPrint + "-R",
 				"ARP-Ping:",
 				"ICMP-Ping:");
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public boolean isTerminate() {
+		return terminate;
 	}
 
 }
