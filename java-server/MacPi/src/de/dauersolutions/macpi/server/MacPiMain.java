@@ -6,7 +6,12 @@ import java.io.InputStreamReader;
 
 public class MacPiMain implements DeviceProvider {
 	
-	public static final String[] WAITING_MESSAGE = new String[] {"Plug me in", "please", "then I will show", "you MAC-Adresses!"};
+	public static final String[] WAITING_MESSAGE = new String[] {
+					"Plug me in please", 
+					"then I will show you", 
+					"the MAC address of", 
+					"the connected Device"};
+	
 	private Device d;
 
 	public static void main2(final String[] args) throws InterruptedException {
