@@ -1,5 +1,13 @@
 # cd to location of this script
-cd ${0%/*}
+#ABSOLUTE_PATH=$(cd `dirname "${BASH_SOURCE[0]}"` && pwd)
+#~ /`basename "${BASH_SOURCE[0]}"`
+#cd $ABSOLUTE_PATH
+cd $(dirname $(readlink -m -q $0))
+pwd
+#~ cd `dirname $0`
+#~ pwd
+#~ cd `pwd -P`
+#~ pwd
 
 if ! sudo invoke-rc.d isc-dhcp-server status; then 
 	sudo ifdown eth0
