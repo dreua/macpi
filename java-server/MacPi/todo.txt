@@ -1,0 +1,9 @@
+Verbessertes UI+Stabilität+Autotyper unter Windows
+
+Denkbar wäre Benutzung der Zwischenablage für MAC-Adressen - ein Daemon läuft
+ständig (bzw. an und abschaltbar) und schreib die aktuelle MAC immer in die Zwischenablage
+im Idealfall mit Anzeige der Änderung als Notification
+Linux (funktioniert): echo -n "mac address" | xsel --input --clipboard
+notify-send "New mac copied: mac"
+
+Windows (zu testen): echo "mac" | clip.exe
